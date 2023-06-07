@@ -1,4 +1,3 @@
-// 02-timer.js
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import Notiflix from "notiflix";
@@ -15,12 +14,12 @@ const datePicker = flatpickr("#datetime-picker", {
       return;
     }
 
-    const startButton = document.querySelector('[data-start]');
     startButton.disabled = false;
   },
 });
 
 const startButton = document.querySelector('[data-start]');
+startButton.disabled = true;
 const daysElement = document.querySelector('[data-days]');
 const hoursElement = document.querySelector('[data-hours]');
 const minutesElement = document.querySelector('[data-minutes]');
@@ -54,6 +53,12 @@ function updateTimerDisplay(time) {
 }
 
 function startCountdown(targetDate) {
+  if (targetDate < new Date()) {
+    Notiflix.Notify.warning("Please choose a date in the future");
+    return;
+  }
+
+  clearInterval(countdownIntervalId);
   countdownIntervalId = setInterval(() => {
     const currentDate = new Date();
     const remainingTime = targetDate.getTime() - currentDate.getTime();
@@ -78,3 +83,16 @@ startButton.addEventListener("click", () => {
 
   startCountdown(selectedDate);
 });
+
+function checkSelectedDate(selectedDates) {
+  const selectedDate = selectedDates[0];
+  if (selectedDate && selectedDate < new Date()) {
+    Notiflix.Notify.warning("Please choose a date in the future");
+    startButton.disabled = true;
+  } else {
+    startButton.disabled = false;
+  }
+}
+
+datePicker.config.onChange.push(checkSelectedDate);
+checkSelectedDate(datePicker.selectedDates);
